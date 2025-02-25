@@ -154,7 +154,4 @@ notebook.add(plus_tab, text="+")
 notebook.bind("<<NotebookTabChanged>>", on_tab_changed)
 
 # Run the main event loop
-test
-test
-test
 root.mainloop()
