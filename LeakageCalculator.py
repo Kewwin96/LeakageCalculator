@@ -52,10 +52,7 @@ def calculate(tab):
 
         # Display results in the scrolled text box
         tab.result_output.config(state=tk.NORMAL)
-<<<<<<< Updated upstream
         tab.result_output.delete("1.0", tk.END)  # Clear previous results
-=======
->>>>>>> Stashed changes
         tab.result_output.insert(tk.END, "\n".join(results))
         tab.result_output.config(state=tk.DISABLED)
 
