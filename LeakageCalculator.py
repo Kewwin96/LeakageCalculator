@@ -53,7 +53,6 @@ def calculate(tab):
         # Display results in the scrolled text box
         tab.result_output.config(state=tk.NORMAL)
         tab.result_output.delete("1.0", tk.END)  # Clear previous results
-        tab.result_output.delete("1.0", tk.END)
         tab.result_output.insert(tk.END, "\n".join(results))
         tab.result_output.config(state=tk.DISABLED)
 
@@ -72,7 +71,17 @@ def save_results(tab):
         return  # User canceled save dialog
 
     try:
-        with open(file_path, "w") as file:
+
+        # Enable the text widget temporarily to read its content
+        tab.result_output.config(state=tk.NORMAL)
+        results_text = tab.result_output.get("1.0", tk.END).strip()  # Strip to remove trailing newlines
+        tab.result_output.config(state=tk.DISABLED)  # Disable again after reading
+
+        if not results_text:
+            print("No results to save.")
+            return
+
+        with open(file_path, "w",encoding="utf-8") as file:
             file.write("=== Leakage Calculator Results ===\n\n")
             file.write(f"Measured Section: {tab.title_entry.get()}\n\n")
             
@@ -84,7 +93,7 @@ def save_results(tab):
             file.write(f"Overpressure Leak [l/s]: {tab.overpressure_leak_entry.get()}\n\n")
             
             file.write("=== Calculation Results ===\n")
-            file.write(tab.result_output.get("1.0", tk.END))
+            file.write(results_text +"\n")
 
         print(f"Results saved to {file_path}")
     
