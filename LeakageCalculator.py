@@ -55,6 +55,7 @@ def calculate(tab):
 <<<<<<< Updated upstream
         tab.result_output.delete("1.0", tk.END)  # Clear previous results
 =======
+        tab.result_output.delete("1.0", tk.END)
 >>>>>>> Stashed changes
         tab.result_output.insert(tk.END, "\n".join(results))
         tab.result_output.config(state=tk.DISABLED)
