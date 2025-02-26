@@ -18,11 +18,16 @@ def calculate(tab):
         width = float(tab.width_entry.get())
         height = float(tab.height_entry.get())
 
+        areawhole = float(tab.areawhole_entry.get())
+
         underpressure_leak = float(tab.underpressure_leak_entry.get())
         overpressure_leak = float(tab.overpressure_leak_entry.get())
 
         # Calculate section Area [m²]
-        area = ((2 * (width + height)) * length) + (2 * (width * height))
+        if areawhole == 0:
+            area = ((2 * (width + height)) * length) + (2 * (width * height))
+        else:
+            area = areawhole
 
         # Constants for Air Leakage Rate [dm³/sm²]
         leakage_rates = {
@@ -120,7 +125,7 @@ def add_tab():
 
     title_entry.bind("<KeyRelease>", update_tab_title)
 
-    input_labels = ["Length [m]:", "Width [m]:", "Height [m]:", 
+    input_labels = ["Length [m]:", "Width [m]:", "Height [m]:", "Area [m^2]", 
                     "Underpressure Leak [l/s]:", "Overpressure Leak [l/s]:"]
 
     entries = []
@@ -140,7 +145,7 @@ def add_tab():
     save_button = tk.Button(new_tab, text="Save Results", command=lambda: save_results(new_tab), bg="#2196F3", fg="white")
     save_button.grid(row=len(input_labels) + 3, column=0, columnspan=2, pady=5, sticky="we")
 
-    (new_tab.length_entry, new_tab.width_entry, new_tab.height_entry, 
+    (new_tab.length_entry, new_tab.width_entry, new_tab.height_entry, new_tab.areawhole_entry, 
      new_tab.underpressure_leak_entry, new_tab.overpressure_leak_entry) = entries
     new_tab.title_entry = title_entry  
     new_tab.result_output = result_output
