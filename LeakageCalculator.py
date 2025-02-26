@@ -1,6 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
-from tkinter import scrolledtext
+from tkinter import ttk, scrolledtext, filedialog
 
 # Global variable to keep track of tab count
 tab_count = 1
@@ -15,7 +14,6 @@ def classify_leakage(measured, L_values):
 
 def calculate(tab):
     try:
-        # Get entries from the current tab
         length = float(tab.length_entry.get())
         width = float(tab.width_entry.get())
         height = float(tab.height_entry.get())
@@ -48,14 +46,16 @@ def calculate(tab):
         underpressure_class = classify_leakage(underpressure_leak, calculated_leakages["Underpressure"])
         overpressure_class = classify_leakage(overpressure_leak, calculated_leakages["Overpressure"])
 
-        # Append classification results
         results.append("\n--- Classification Based on Measured Values ---")
         results.append(f"Measured Underpressure Leak: {underpressure_leak:.2f} l/s → Class {underpressure_class}")
         results.append(f"Measured Overpressure Leak: {overpressure_leak:.2f} l/s → Class {overpressure_class}")
 
         # Display results in the scrolled text box
         tab.result_output.config(state=tk.NORMAL)
+<<<<<<< Updated upstream
         tab.result_output.delete("1.0", tk.END)  # Clear previous results
+=======
+>>>>>>> Stashed changes
         tab.result_output.insert(tk.END, "\n".join(results))
         tab.result_output.config(state=tk.DISABLED)
 
@@ -65,35 +65,68 @@ def calculate(tab):
         tab.result_output.insert(tk.END, "❌ Please enter valid numeric values!")
         tab.result_output.config(state=tk.DISABLED)
 
+def save_results(tab):
+    """Saves the input values and calculated results to a file."""
+    file_path = filedialog.asksaveasfilename(defaultextension=".txt", 
+                                             filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
+                                             title="Save Results As")
+    if not file_path:
+        return  # User canceled save dialog
+
+    try:
+
+        # Enable the text widget temporarily to read its content
+        tab.result_output.config(state=tk.NORMAL)
+        results_text = tab.result_output.get("1.0", tk.END).strip()  # Strip to remove trailing newlines
+        tab.result_output.config(state=tk.DISABLED)  # Disable again after reading
+
+        if not results_text:
+            print("No results to save.")
+            return
+
+        with open(file_path, "w",encoding="utf-8") as file:
+            file.write("=== Leakage Calculator Results ===\n\n")
+            file.write(f"Measured Section: {tab.title_entry.get()}\n\n")
+            
+            file.write("=== Input Values ===\n")
+            file.write(f"Length [m]: {tab.length_entry.get()}\n")
+            file.write(f"Width [m]: {tab.width_entry.get()}\n")
+            file.write(f"Height [m]: {tab.height_entry.get()}\n")
+            file.write(f"Underpressure Leak [l/s]: {tab.underpressure_leak_entry.get()}\n")
+            file.write(f"Overpressure Leak [l/s]: {tab.overpressure_leak_entry.get()}\n\n")
+            
+            file.write("=== Calculation Results ===\n")
+            file.write(results_text +"\n")
+
+        print(f"Results saved to {file_path}")
+    
+    except Exception as e:
+        print(f"Error saving file: {e}")
+
 def add_tab():
     global tab_count
     new_tab = ttk.Frame(notebook)
-    
-    
-    # Ensure that the first tab is inserted normally if no other tabs exist
+
     if len(notebook.tabs()) > 0:
         notebook.insert(notebook.index("end") - 1, new_tab, text=f"Tab {tab_count}")
     else:
-        notebook.add(new_tab, text=f"Tab {tab_count}")  # First tab is added normally
+        notebook.add(new_tab, text=f"Tab {tab_count}")  
 
-     #  **Title Label and Entry Field**
     tk.Label(new_tab, text="Measured Section:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
     title_entry = tk.Entry(new_tab, width=20)
     title_entry.grid(row=0, column=1, padx=5, pady=5, sticky="we")
-    
-    #  **Function to update the tab title dynamically**
+
     def update_tab_title(*args):
         new_title = title_entry.get().strip()
         if new_title:
-            notebook.tab(new_tab, text=new_title)  # Update tab title
+            notebook.tab(new_tab, text=new_title)
 
-     # Bind the title entry to update tab title when text changes
     title_entry.bind("<KeyRelease>", update_tab_title)
-    
-    # Create input fields for dimensions
-    input_labels = ["Length [m]:", "Width [m]:", "Height [m]:", "Underpressure Leak [l/s]:", "Overpressure Leak [l/s]:"]
-    entries = []
 
+    input_labels = ["Length [m]:", "Width [m]:", "Height [m]:", 
+                    "Underpressure Leak [l/s]:", "Overpressure Leak [l/s]:"]
+
+    entries = []
     for i, label in enumerate(input_labels):
         tk.Label(new_tab, text=label).grid(row=i+1, column=0, padx=10, pady=5, sticky="w")
         entry = tk.Entry(new_tab, width=10)
@@ -106,52 +139,47 @@ def add_tab():
     result_output = scrolledtext.ScrolledText(new_tab, height=10, wrap=tk.WORD, state=tk.DISABLED)
     result_output.grid(row=len(input_labels) + 2, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
 
-    new_tab.length_entry, new_tab.width_entry, new_tab.height_entry, new_tab.underpressure_leak_entry, new_tab.overpressure_leak_entry = entries
-    new_tab.title_entry = title_entry
+    # 🔹 **Save File Button**
+    save_button = tk.Button(new_tab, text="Save Results", command=lambda: save_results(new_tab), bg="#2196F3", fg="white")
+    save_button.grid(row=len(input_labels) + 3, column=0, columnspan=2, pady=5, sticky="we")
+
+    (new_tab.length_entry, new_tab.width_entry, new_tab.height_entry, 
+     new_tab.underpressure_leak_entry, new_tab.overpressure_leak_entry) = entries
+    new_tab.title_entry = title_entry  
     new_tab.result_output = result_output
 
     for i in range(2):  
         new_tab.columnconfigure(i, weight=1)
-    new_tab.rowconfigure(len(input_labels) + 2, weight=1)  # Make results box expand
+    new_tab.rowconfigure(len(input_labels) + 2, weight=1)  
 
     tab_count += 1
 
-
-# Initialize window
 root = tk.Tk()
 root.title("Leakage Calculator")
 root.geometry("800x600")
 
-# Allow window to be resized
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
 
-
-# Create a notebook (tabbed interface)
 notebook = ttk.Notebook(root)
 notebook.pack(expand=True, fill="both")
 
-# Function to ensure "+" tab is at the end
 def maintain_plus_tab():
     if notebook.tab(notebook.index("end") - 1, "text") != "+":
         plus_tab = ttk.Frame(notebook)
         notebook.add(plus_tab, text="+")
         notebook.bind("<<NotebookTabChanged>>", on_tab_changed)
 
-# Function to handle clicking the "+" tab
 def on_tab_changed(event):
-    if notebook.tab(notebook.select(), "text") == "+":
+    if notebook.tab(notebook.select(), "text") == "+": 
         add_tab()
-        # Ensure "+" tab is always last
         notebook.add(notebook.tab(notebook.index("end") - 1, "text"), text="+", sticky="nsew")
         maintain_plus_tab()
 
 add_tab()
 
-# Add "+" tab first
 plus_tab = ttk.Frame(notebook)
 notebook.add(plus_tab, text="+")
 notebook.bind("<<NotebookTabChanged>>", on_tab_changed)
 
-# Run the main event loop
 root.mainloop()
